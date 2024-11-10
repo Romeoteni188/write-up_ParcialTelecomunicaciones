@@ -1,106 +1,106 @@
-***
+## Fase 1 Reconocimiento de las IPs en el pool 192.168.1.0/24
 
-## Fase 1 Reconocimiento de las ips nivel general del pool 192.168.1.0/24
+![Reconocimiento de IPs](images/Pasted_image_20241109183812.png)
 
-![[Pasted image 20241109183812.png]]
+## Fase 2 Enumeración de Servicios
 
+Como objetivo principal antes de enumerar los servicios fue la detección del IDS Wazuh.  
+Los servicios y puertos que usa Wazuh son:  
+- ssh 22
+- 111 tcp
+- 443 tcp
 
-## Fase 2 Enumeracion de Servicios 
+![Servicios de Wazuh](images/Pasted_image_20241109184841.png)
 
-Como objetivo principal antes de enuemerar los servicios fue la deteccion del IDS wazuh
-los servicios y los puertos que usa wazuh son:
-ssh 22
-111 tcp
-443 tcp
-![[Pasted image 20241109184841.png]]
+Además, Wazuh tiene estos tres puertos; los agentes solo cuentan con un puerto.
 
+![Puertos adicionales](images/Pasted_image_20241109184744.png)
+![Más puertos](images/Pasted_image_20241109184921.png)
 
-aparte wazuh tiene estos tres puertos, los agentes solo cuentan con solo uno puerto 
+## Fase POC
 
-![[Pasted image 20241109184744.png]]
+El servidor Wazuh tenía la IP 192.168.1.111.
 
-![[Pasted image 20241109184921.png]]
+Otra desventaja que tuvo el otro equipo fue que no conocían el IDS, y existía un segundo usuario.
 
-## Fase POC 
-El servidor wazuh era la ip 192.168.1.111
+![Usuario adicional](images/Pasted_image_20241109185342.png)
 
-otra desventaja que tuvieron el otro equipo que no conocian el IDS  como tal existia de un segundo usuario.
-![[Pasted image 20241109185342.png]]
+Está claro en la documentación el usuario `kibanaserver` y `wazuh-user`:
+[Documentación de Wazuh](https://documentation.wazuh.com/current/search.html?q=kibanaserver&check_keywords=yes&area=default)
 
-Esta claro en la documentacion el usario kiabanaserver y wazuh-user> 
-https://documentation.wazuh.com/current/search.html?q=kibanaserver&check_keywords=yes&area=default
+Es por eso que no era necesario hacer un ataque de fuerza bruta.
 
-Es por eso que no era necesario hacer un ataque de fuerza bruta
+![Captura de información de usuario](images/WhatsApp_Image_2024-11-08_at_6.53.15_PM.jpeg)
 
-![[WhatsApp Image 2024-11-08 at 6.53.15 PM.jpeg]]
-Con esta informacion ya no era necesario las demas ips que tambian habian maquinas virtuales.
+Con esta información, ya no eran necesarias las demás IPs, aunque había máquinas virtuales adicionales.
 
-El objetivo se estaba siendo bien claro que la maquina que estaban protegiendo era la linux ubuntu con la version 16
+El objetivo era claro: la máquina protegida era una Linux Ubuntu versión 16.
 
-Se Escaneo de puertos al victima ubuntu y tenia los puertos 
-80,22,443, 21 
+Se escanearon los puertos de la víctima Ubuntu, que tenía los puertos 80, 22, 443 y 21 abiertos.
 
-Lo primero  que se hizo es ver que tenia ese puerto 80 en el navegador
-![[Pasted image 20241109192736.png]]
-Despues toco enumeros recursos compartidos 
+Primero, se revisó el puerto 80 en el navegador.
 
-![[Pasted image 20241109192821.png]]
+![Revisión del puerto 80](images/Pasted_image_20241109192736.png)
 
-![[Pasted image 20241109192838.png]]
-se uso otra herrienta para ver mas de los recursos 
-![[Pasted image 20241109192908.png]]
-vemos que existe la ruta secret
-![[Pasted image 20241109193022.png]]
+Luego, se enumeraron recursos compartidos.
 
-![[Pasted image 20241109193038.png]]
+![Recursos compartidos](images/Pasted_image_20241109192821.png)
+![Más recursos compartidos](images/Pasted_image_20241109192838.png)
 
-Examinado la url el camino no era alli para la intrucion
+Se usó otra herramienta para ver más de los recursos.
 
-El puerto 21 tenia una version deprecada que tenia una version de 1.3.3, toco investigar sobre ese servicio.
+![Herramienta adicional](images/Pasted_image_20241109192908.png)
 
+Se encontró la ruta `secret`.
 
-![[Pasted image 20241109193405.png]]
+![Ruta secreta](images/Pasted_image_20241109193022.png)
+![Ruta secreta - 2](images/Pasted_image_20241109193038.png)
 
-Descripcion de la vulneravilidad 
+Examinando la URL, el camino no estaba allí para la intrusión.
 
-El domingo 28 de noviembre de 2010, alrededor de las 20:00 UTC, el servidor de distribución principal del proyecto ProFTPD se vio comprometido. Los atacantes probablemente utilizaron un problema de seguridad no corregido en el demonio FTP para obtener acceso al servidor y utilizaron sus privilegios para reemplazar los archivos fuente de ProFTPD 1.3.3c con una versión que contenía una puerta trasera. La modificación no autorizada del código fuente fue detectada por Daniel Austin y transmitida al proyecto ProFTPD por Jeroen Geilman el miércoles 1 de diciembre, y corregida poco después.
+El puerto 21 tenía una versión deprecada 1.3.3, se investigó sobre ese servicio.
 
-Cualquiera que haya descargado ProFTPD 1.3.3c desde uno de los servidores de réplica oficiales entre el 28 de noviembre de 2010 y el 2 de diciembre de 2010 probablemente se verá afectado por el problema. La puerta trasera introducida por los atacantes permite a los usuarios no autenticados acceder remotamente como root a los sistemas que ejecutan la versión modificada maliciosamente del demonio ProFTPD.
+![Puerto 21 versión deprecada](images/Pasted_image_20241109193405.png)
 
-```bash
-https://github.com/shafdo/ProFTPD-1.3.3c-Backdoor_Command_Execution_Automated_Script.git
-```
+### Descripción de la Vulnerabilidad
 
-```bash
-https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor
-```
+El domingo 28 de noviembre de 2010, alrededor de las 20:00 UTC, el servidor de distribución principal del proyecto ProFTPD fue comprometido. Los atacantes utilizaron una vulnerabilidad no corregida en el demonio FTP para obtener acceso al servidor y reemplazaron los archivos fuente de ProFTPD 1.3.3c con una versión que contenía una puerta trasera.
 
-## Fase de LPE
+- [Script de ejecución de comando automatizado](https://github.com/shafdo/ProFTPD-1.3.3c-Backdoor_Command_Execution_Automated_Script.git)
+- [Detalles de la vulnerabilidad](https://www.aldeid.com/wiki/Exploits/proftpd-1.3.3c-backdoor)
 
-La escalada de privilegios locales, cuando ya tienen acceso al sistema y estan intentando elevar permisos dentro del mismo.
+## Fase de Escalada de Privilegios (LPE)
 
-para explotar la vulnerabilidad se uso  searchsploit
-![[Pasted image 20241109193623.png]]
-![[Pasted image 20241109193701.png]]
+La escalada de privilegios locales se realiza cuando ya se tiene acceso al sistema y se intenta elevar permisos dentro del mismo.
 
-Con ese exploit uno ya podia ingresar como Root al servidor 
-se enumero las posibles contraseñas
+Para explotar la vulnerabilidad, se utilizó `searchsploit`.
 
-![[Pasted image 20241109193810.png]]
-en las ruta podemos listar las posibles contrañas y usuarios que se guardaron en dos archivos uno para los usuarios y el otro para las contraseñas , tambien se lista los grupos
+![Searchsploit](images/Pasted_image_20241109193623.png)
+![Exploit encontrado](images/Pasted_image_20241109193701.png)
+
+Con este exploit, se logró acceder como root al servidor y se enumeraron posibles contraseñas.
+
+![Contraseñas](images/Pasted_image_20241109193810.png)
+
+En la ruta se listaron las posibles contraseñas y usuarios, almacenados en dos archivos: uno para los usuarios y otro para las contraseñas, además de los grupos:
+
 cat /etc/passwd
 
-![[Pasted image 20241109194107.png]]
+![contraseñas](images/Pasted_image20241109194107.png)
+
+
 para finalizar se escaneo los servidores de la ip  192.168.1.104 y 192.168.1.101
 la 1.101 tenia estos servicios y puertos abiertos.
 
-![[Pasted image 20241109194730.png]]
-![[Pasted image 20241109194803.png]]
+
+![contraseñas](images/Pasted_image20241109194730.png)
+
 La otra ip 1.104
 
-![[Pasted image 20241109194948.png]]
+![contraseñas](images/Pasted_image20241109194948.png)
 
 ![[Pasted image 20241109195014.png]]
 
+![contraseñas](images/Pasted_image20241109195014.png)
 
 # Continuará . . . !
